@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>RankMeter – KTU Grade Projection Calculator</title>
+
+  <!-- 🔍 SEO & Social Preview -->
+  <meta name="description" content="RankMeter helps KTU students calculate how many marks they need in externals to achieve their target grade. Built using HTML, CSS, and JavaScript.">
+  <meta name="keywords" content="KTU grade calculator, RankMeter, student tool, external mark calculator, HTML CSS JS project">
+  <meta name="author" content="Anjali Sukumaran">
+
+  <!-- 🔗 Social media preview (for LinkedIn / WhatsApp) -->
+  <meta property="og:title" content="RankMeter – KTU Grade Projection Calculator">
+  <meta property="og:description" content="Enter your internal marks and see how much you need in externals to achieve your desired KTU grade instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://img.icons8.com/color/96/goal.png">
+  <meta property="og:url" content="https://rankmeter-anjali.netlify.app">
+
+  <!-- 🧭 Favicon -->
+  <link rel="icon" href="https://img.icons8.com/color/48/goal.png" type="image/png">
+
+  <!-- 🎨 External CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h1>
+      <img src="https://img.icons8.com/color/48/goal.png" width="28" style="vertical-align: middle; margin-right: 8px;">
+      RankMeter
+    </h1>
+    <p class="tagline">Know what you need before the exam!</p>
+
+    <div class="input-box">
+      <label>Subject Name</label>
+      <input type="text" id="subject" placeholder="Eg: DBMS" />
+
+      <label>Internal Marks (out of 50)</label>
+      <input type="number" id="internal" placeholder="Eg: 35" />
+
+      <label>Target Grade</label>
+      <select id="gradeSelect">
+        <option value="90">S (≥90%)</option>
+        <option value="85">A+ (85–90%)</option>
+        <option value="80">A (80–85%)</option>
+        <option value="75">B+ (75–80%)</option>
+        <option value="70">B (70–75%)</option>
+        <option value="65">C+ (65–70%)</option>
+        <option value="60">C (60–65%)</option>
+        <option value="55">D (55–60%)</option>
+        <option value="50">P (50–55%)</option>
+        <option value="40">LP (≥40% ESE but <50% total)</option>
+      </select>
+
+      <button id="calcBtn">Calculate</button>
+    </div>
+
+    <div id="result-box" class="result-box hidden">
+      <h2 id="subject-name"></h2>
+      <p id="result"></p>
+      <div class="progress">
+        <div id="progress-bar"></div>
+      </div>
+      <p id="grade"></p>
+    </div>
+
+    <footer>
+      <p>Made by <strong>Anjali</strong></p>
+    </footer>
+  </div>
+
+  <!-- ⚙️ Inline JavaScript -->
+  <script>
+    document.getElementById("calcBtn").addEventListener("click", calculateRank);
+
+    function calculateRank() {
+      const subject = document.getElementById("subject").value.trim();
+      const internal = parseFloat(document.getElementById("internal").value);
+      const gradeSelect = document.getElementById("gradeSelect");
+      const target = parseFloat(gradeSelect.value);
+
+      if (!subject || isNaN(internal)) {
+        alert("Please enter the subject and your internal marks!");
+        return;
+      }
+
+      const totalInternal = 50;
+      const totalExternal = 100;
+      const totalMarks = totalInternal + totalExternal; // 150 total
+
+      const internalTotalMarks = (internal / totalInternal) * 50; // internal’s contribution
+      const targetTotalMarks = (target / 100) * totalMarks;
+      const requiredExternalMarks = targetTotalMarks - internalTotalMarks;
+
+      const resultBox = document.getElementById("result-box");
+      const subjectName = document.getElementById("subject-name");
+      const result = document.getElementById("result");
+      const progressBar = document.getElementById("progress-bar");
+      const grade = document.getElementById("grade");
+
+      subjectName.textContent = `📘 ${subject}`;
+
+      let resultMsg = "";
+      let gradeMsg = "";
+      let gradeColor = "#4e54c8";
+
+      if (requiredExternalMarks > 100) {
+        resultMsg = `You need ${requiredExternalMarks.toFixed(1)} marks in externals to reach ${target}% 😢 (Not possible)`;
+        gradeMsg = "Aim for a lower grade.";
+        gradeColor = "#e74c3c";
+      } else if (requiredExternalMarks < 0) {
+        resultMsg = `You already secured ${target}% or above! 🎉`;
+        gradeMsg = "Excellent! Keep it up 💪";
+        gradeColor = "#27ae60";
+      } else {
+        const gradeText = gradeSelect.options[gradeSelect.selectedIndex].text;
+        resultMsg = `You need ${requiredExternalMarks.toFixed(1)} marks in externals to achieve ${gradeText} 🎯`;
+
+        // Grade Message based on KTU table
+        if (target >= 90) gradeMsg = "S Grade (GP 10)";
+        else if (target >= 85) gradeMsg = "A+ Grade (GP 9)";
+        else if (target >= 80) gradeMsg = "A Grade (GP 8.5)";
+        else if (target >= 75) gradeMsg = "B+ Grade (GP 8)";
+        else if (target >= 70) gradeMsg = "B Grade (GP 7.5)";
+        else if (target >= 65) gradeMsg = "C+ Grade (GP 7)";
+        else if (target >= 60) gradeMsg = "C Grade (GP 6.5)";
+        else if (target >= 55) gradeMsg = "D Grade (GP 6)";
+        else if (target >= 50) gradeMsg = "P Grade (GP 5.5)";
+        else if (target >= 40) gradeMsg = "LP (Low Pass) – GP 4 ⚠️";
+        else gradeMsg = "F (Fail) – GP 0 ❌";
+      }
+
+      // Progress bar visuals
+      progressBar.style.width = `${Math.min(target, 100)}%`;
+      if (target >= 85) gradeColor = "#27ae60";
+      else if (target >= 70) gradeColor = "#2980b9";
+      else if (target >= 55) gradeColor = "#f1c40f";
+      else gradeColor = "#e74c3c";
+      progressBar.style.background = gradeColor;
+
+      result.textContent = resultMsg;
+      grade.textContent = gradeMsg;
+      resultBox.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
